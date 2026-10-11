@@ -125,13 +125,42 @@ fun PerformanceTab(state: MutableState<Settings>) {
                 ),
                 mtvu = com.armsx2.DeviceTier.mtvuDefault(),
             )
+            // A06 Balanced is a graphics-load profile for scenes that overwhelm the Mali-class
+            // GPU: 0.75x internal resolution cuts rendered pixels, minimum blending reduces
+            // expensive blend passes, and partial texture preloading limits resource pressure.
+            // It deliberately keeps EE cycle skip at 0 and fastCDVD off to avoid introducing
+            // timing-sensitive speedhacks before we have a per-scene CPU/GPU profile.
+            val a06Balanced = s.copy(
+                cpu = s.cpu.copy(
+                    eeCycleRate = 0,
+                    eeCycleSkip = 0,
+                    mtvu = com.armsx2.DeviceTier.mtvuDefault(),
+                    vu1Instant = true,
+                    vuFlagHack = true,
+                    intcStat = true,
+                    waitLoop = true,
+                    fastCDVD = false,
+                ),
+                display = s.display.copy(
+                    hwRov = false,
+                ),
+                output = s.output.copy(
+                    upscaleFloat = 0.75f,
+                ),
+                graphics = s.graphics.copy(
+                    accurateBlendingUnit = 0,
+                    hwMipmap = false,
+                    texturePreloading = 1,
+                ),
+            )
             // -1 = no preset matches (custom): no segment highlighted.
-            val idx = when (s) { safe -> 0; fast -> 1; lowEnd -> 2; else -> -1 }
-            SegmentedRow(
+            val idx = when (s) { safe -> 0; fast -> 1; lowEnd -> 2; a06Balanced -> 3; else -> -1 }
+            SegmentedGridRow(
                 label = str("perf.speedhackProfile.label"),
-                options = listOf(str("perf.speedhackProfile.optimal"), str("perf.speedhackProfile.fast"), str("perf.speedhackProfile.lowEnd")),
+                options = listOf(str("perf.speedhackProfile.optimal"), str("perf.speedhackProfile.fast"), str("perf.speedhackProfile.lowEnd"), "A06 Balanced"),
                 selectedIndex = idx,
-                onChange = { when (it) { 0 -> apply(safe); 1 -> apply(fast); 2 -> apply(lowEnd) } },
+                columns = 2,
+                onChange = { when (it) { 0 -> apply(safe); 1 -> apply(fast); 2 -> apply(lowEnd); 3 -> apply(a06Balanced) } },
             )
         }
         HelpText(str("perf.speedhackProfile.help"))
