@@ -50,7 +50,7 @@ jobs:
         run: rustup target add aarch64-linux-android
 
       - name: Build Android release APK
-        run: ./gradlew :app:assembleRelease -Parmsx2.marchExtra=-moutline-atomics --stacktrace
+        run: ./gradlew :app:assembleRelease -Parmsx2.pgo=optimize -Parmsx2.pgoProfile="$PWD/pgo/armsx2.profdata" -Parmsx2.marchExtra=-moutline-atomics --stacktrace
 
       - name: Upload generated APKs
         uses: actions/upload-artifact@v7
